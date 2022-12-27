@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
+    "crypto/tls"
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
@@ -64,23 +64,49 @@ func NewClient(opt *Options) *Client {
 		proxyFunction = opt.ProxyFunc
 	}
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			Proxy: proxyFunction,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			ForceAttemptHTTP2:     true,
-			MaxIdleConns:          0,    // Default: 100
-			MaxIdleConnsPerHost:   1000, // Default: 2
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-		Timeout: time.Second * 180, // Google's timeout
-	}
+	if opt.InsecureSkipVerify != nil {
+        httpClient := &http.Client{
+            Transport: &http.Transport{
+                Proxy: proxyFunction,
+                DialContext: (&net.Dialer{
+                    Timeout:   30 * time.Second,
+                    KeepAlive: 30 * time.Second,
+                    DualStack: true,
+                }).DialContext,
+                ForceAttemptHTTP2:     true,
+                MaxIdleConns:          0,    // Default: 100
+                MaxIdleConnsPerHost:   1000, // Default: 2
+                IdleConnTimeout:       90 * time.Second,
+                TLSHandshakeTimeout:   10 * time.Second,
+                ExpectContinueTimeout: 1 * time.Second,
+                TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+            },
+            Timeout: time.Second * 180, // Google's timeout
+        }
+    }else{
+        httpClient := &http.Client{
+    		Transport: &http.Transport{
+    			Proxy: proxyFunction,
+    			DialContext: (&net.Dialer{
+    				Timeout:   30 * time.Second,
+    				KeepAlive: 30 * time.Second,
+    				DualStack: true,
+    			}).DialContext,
+    			ForceAttemptHTTP2:     true,
+    			MaxIdleConns:          0,    // Default: 100
+    			MaxIdleConnsPerHost:   1000, // Default: 2
+    			IdleConnTimeout:       90 * time.Second,
+    			TLSHandshakeTimeout:   10 * time.Second,
+    			ExpectContinueTimeout: 1 * time.Second,
+    		},
+    		Timeout: time.Second * 180, // Google's timeout
+    	}
+
+    }
+
+
+
+
 
 	client := Client{
 		Client: httpClient,
