@@ -1,4 +1,4 @@
-module github.com/ermashov/geziyor
+module github.com/ermashov/gv
 
 go 1.15
 
